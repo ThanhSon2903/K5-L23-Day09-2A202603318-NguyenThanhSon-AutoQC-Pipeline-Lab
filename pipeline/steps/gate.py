@@ -1,4 +1,4 @@
-
+ 
 """BƯỚC 4 — Quality Gate: Release / Hold / Rework."""
 
 from ..common import ERROR, WARN
@@ -8,7 +8,6 @@ def decide(issues, image_stems, cfg, reviewed=frozenset()):
     # Lấy cấu hình
     threshold = cfg["gate"]["warn_ratio_hold"]
 
-    # Chuyển danh sách ảnh thành set để tránh đếm trùng
     image_stems = set(image_stems)
     reviewed = set(reviewed)
 
@@ -20,8 +19,6 @@ def decide(issues, image_stems, cfg, reviewed=frozenset()):
         if issue.image in image_stems
     ]
 
-    # 1. Đếm số lỗi ERROR
-    # ERROR không được bỏ qua dù ảnh đã review
     error_issues = [
         issue for issue in valid_issues
         if issue.severity == ERROR
@@ -29,8 +26,6 @@ def decide(issues, image_stems, cfg, reviewed=frozenset()):
 
     n_errors = len(error_issues)
 
-    # 2. Lấy những ảnh có ít nhất một WARN
-    # Bỏ qua ảnh đã được review
     warn_images = {
         issue.image
         for issue in valid_issues
@@ -49,7 +44,6 @@ def decide(issues, image_stems, cfg, reviewed=frozenset()):
 
     warn_ratio = round(warn_ratio, 4)
 
-    # 4. Quyết định Quality Gate
     reasons = []
 
     if n_errors > 0:
@@ -75,7 +69,6 @@ def decide(issues, image_stems, cfg, reviewed=frozenset()):
             f"{threshold:.4f}."
         )
 
-    # Thông tin bổ sung về review
     if reviewed:
         reasons.append(
             f"Đã review {len(reviewed & image_stems)} ảnh; "
