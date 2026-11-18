@@ -1,0 +1,19 @@
+{
+  "verdict": {
+    "decision": "Hold",
+    "n_errors": 0,
+    "n_warn_images": 38,
+    "n_images": 202,
+    "warn_ratio": 0.1881,
+    "reasons": [
+      "Có 38/202 ảnh còn cảnh báo (tỷ lệ 0.1881), đạt hoặc vượt ngưỡng Hold 0.1000.",
+      "Đã review 80 ảnh; WARN của các ảnh này không còn được tính."
+    ]
+  },
+  "reviewed": 80,
+  "budget": 80,
+  "seconds": 11.5,
+  "exported": "C:\\Users\\Admin\\K5-L23-Day09-2A202603318-NguyenThanhSon-AutoQC-Pipeline-Lab\\submission\\export\\clean_v1",
+  "config_sha1": "d48ae96f839f184b2b0d73880a9c7236b7d7315b",
+  "review_sim_sha1": "7988ca22827f780a7043a2300490e679a1697154"
+}
