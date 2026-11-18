@@ -1,7 +1,4 @@
 # Báo cáo Day 09 — Nguyễn Thanh Sơn, 2A202603318
-
-> Xoá mọi `TODO(học viên)` và dòng gợi ý. Mỗi ý trả lời bằng **số lấy từ `submission/reports/`**, kèm mẫu số. Cả báo cáo ~1–2 trang.
-
 ## 1. Kết luận trước
 Pipeline kết luận **Hold**, Ban đầu có 224 ảnh, sau bước tiếp nhận dữ liệu loại 22 ảnh do ảnh hỏng còn lại 202 ảnh. Dataset `clean_v1` được xuất với 202 ảnh ở trạng thái bản nháp, chưa được phát hành.
 Lý do chính: 
@@ -69,10 +66,13 @@ Thử nghiệm chứng minh gate hoạt động đúng: khi không có lượt r
 3. Perceptual hash có thể nhầm ảnh khác nội dung
 - Khi thử duplicates.phash_dist = 16, tôi kiểm tra bằng mắt và phát hiện hai cặp img_0011–img_0008 và img_0177–img_0113 bị đánh dấu là ảnh gần trùng dù nội dung cảnh khác nhau. Điều này cho thấy perceptual hash chỉ đo độ tương đồng về hình ảnh, không hiểu ngữ nghĩa của đối tượng và bối cảnh. Vì vậy, em chọn ngưỡng 14 để hạn chế false positive, chấp nhận bỏ sót một số ảnh tương tự.
 
-## 5. Train: raw vs clean (tùy chọn, chấm riêng)
-Chưa train: ghi "chưa chạy" và lý do, rồi bỏ qua phần còn lại của mục này. Nếu đã train: dán bảng từ `submission/results/comparison.md` (model, epoch, seed, số ảnh train mỗi biến thể).
+## 5. Train: raw vs clean (tùy chọn)
 
-TODO(học viên): chênh mAP50 (clean − raw) so với **độ lệch chuẩn giữa các seed**; kết luận **trung thực** (nằm trong nhiễu thì nói là chưa kết luận được); ≥ 2 giả thuyết giải thích (ảnh trùng/rò rỉ test trong `raw`, nhãn máy còn lại trong `clean`, test chỉ 100 ảnh…) và cách kiểm.
+**Chưa chạy tại thời điểm hoàn thiện báo cáo.**
+
+Lý do: Tôi ưu tiên hoàn thành và kiểm tra pipeline AutoQC, calibration các ngưỡng và quy trình review nhãn trước. Phần huấn luyện so sánh raw và clean cần thêm thời gian chuẩn bị dữ liệu, cấu hình môi trường và chạy nhiều seed để kết quả có độ tin cậy.
+
+Tôi dự kiến thực hiện phần này sau khi hoàn thành các bước kiểm tra cốt lõi. Hiện tại chưa có kết quả thực nghiệm nên chưa đưa ra kết luận về sự khác biệt chất lượng giữa hai biến thể.
 
 ## 6. Quyết định và ghi chú AI
 ## 6.1. Quyết định cuối 
