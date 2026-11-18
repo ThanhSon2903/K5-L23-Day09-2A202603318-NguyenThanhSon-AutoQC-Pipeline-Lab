@@ -47,7 +47,27 @@ Vì sao `05_review_queue.csv` xếp ảnh đầu hàng như vậy? Với ngân s
 
 
 ## 4. Cửa chặn và điều pipeline KHÔNG bắt được
-TODO(học viên): (a) chứng minh gate chặn đúng: chạy `python -m pipeline.run --budget 0 --reports work/rep_nb --export-dir work/exp_nb` (không có người duyệt nên ảnh thiếu file nhãn còn nguyên), chỉ ra kết luận **Rework**, mã thoát 20 và việc **không xuất** dataset. (Đừng sửa tay `work/run/ds`: pipeline dựng lại thư mục này từ raw mỗi lần chạy.) (b) ≥ 2 điểm mù có bằng chứng (box lỏng nhẹ, nhầm lớp mà model lớn cũng nhầm, ảnh trùng biến đổi mạnh…).
+## 4.1. Chứng minh gate hoạt động
+Em chạy pipeline với ngân sách review bằng 0 để kiểm tra trường hợp không có người duyệt:
+`python -m pipeline.run --budget 0 --reports work/rep_nb --export-dir work/exp_nb`
+Kết quả thực tế:
+- Tổng đầu vào: 224 ảnh, sau intake còn 202 ảnh, loại 22 ảnh.
+- QC vòng 1: phát hiện 36 lỗi bắt buộc và 153 cảnh báo.
+- Sửa tự động: thực hiện 35 thay đổi.
+- QC vòng 2: còn 6 lỗi bắt buộc, hàng đợi review có 125 ảnh.
+- Human review: ngân sách 0 ảnh, không có ảnh nào được người duyệt xử lý.
+- Kết luận: REWORK vì còn 6 lỗi ERROR chưa được xử lý.
+- Exit code: 20.
+- Export: Không xuất dataset vào work/exp_nb.
+
+Thử nghiệm chứng minh gate hoạt động đúng: khi không có lượt review và vẫn còn lỗi bắt buộc, pipeline không cho phép phát hành dataset mà yêu cầu quay lại bước review để xử lý.
+## 4.2. Những điểm mù của AutoQC 
+1. Box lỏng nhẹ (POSSIBLE_LOOSE_BOX)
+- Trong 02_error_list_v1.csv có 28 dòng POSSIBLE_LOOSE_BOX. Một bounding box có thể vẫn chứa đúng đối tượng nhưng dư một phần nền xung quanh. Hệ thống có thể phát hiện các trường hợp bất thường rõ ràng, nhưng khó đánh giá chính xác box có quá rộng so với đối tượng hay không. Vì vậy, cần người kiểm tra trực tiếp trên ảnh.
+2. Bỏ sót đối tượng (POSSIBLE_MISSING)
+- Có 53 dòng POSSIBLE_MISSING trong báo cáo v1. Những đối tượng nhỏ, bị che khuất hoặc khó nhận diện có thể không được model phát hiện. Hệ thống có thể đưa ra cảnh báo nhưng vẫn cần người xem lại ảnh để xác định có thực sự thiếu annotation hay không.
+3. Perceptual hash có thể nhầm ảnh khác nội dung
+- Khi thử duplicates.phash_dist = 16, tôi kiểm tra bằng mắt và phát hiện hai cặp img_0011–img_0008 và img_0177–img_0113 bị đánh dấu là ảnh gần trùng dù nội dung cảnh khác nhau. Điều này cho thấy perceptual hash chỉ đo độ tương đồng về hình ảnh, không hiểu ngữ nghĩa của đối tượng và bối cảnh. Vì vậy, em chọn ngưỡng 14 để hạn chế false positive, chấp nhận bỏ sót một số ảnh tương tự.
 
 ## 5. Train: raw vs clean (tùy chọn, chấm riêng)
 Chưa train: ghi "chưa chạy" và lý do, rồi bỏ qua phần còn lại của mục này. Nếu đã train: dán bảng từ `submission/results/comparison.md` (model, epoch, seed, số ảnh train mỗi biến thể).
@@ -55,6 +75,11 @@ Chưa train: ghi "chưa chạy" và lý do, rồi bỏ qua phần còn lại c�
 TODO(học viên): chênh mAP50 (clean − raw) so với **độ lệch chuẩn giữa các seed**; kết luận **trung thực** (nằm trong nhiễu thì nói là chưa kết luận được); ≥ 2 giả thuyết giải thích (ảnh trùng/rò rỉ test trong `raw`, nhãn máy còn lại trong `clean`, test chỉ 100 ảnh…) và cách kiểm.
 
 ## 6. Quyết định và ghi chú AI
-TODO(học viên): (a) quyết định cuối; nếu Hold/Rework cần làm gì để thành Release? (b) Dùng AI viết code? Ghi 3 dòng: prompt chính, cách bạn kiểm code AI, 1 lần AI sai. Không dùng: ghi "không dùng".
-
+## 6.1. Quyết định cuối 
+- HOLD – Dataset chưa đủ điều kiện Release vì còn 38/202 ảnh có cảnh báo sau review, tương đương 18.81%, vượt ngưỡng Hold 10%.
+- Để chuyển sang Release, cần tiếp tục review các ảnh còn cảnh báo, sửa hoặc xác minh annotation, chạy lại pipeline và đảm bảo không còn lỗi ERROR, tỷ lệ ảnh còn cảnh báo dưới ngưỡng cho phép.
+## 6.2. Ghi chú sử dụng AI
+- Prompt chính: Hướng dẫn xây dựng và kiểm tra các bước AutoQC, calibration hai ngưỡng và xử lý lỗi annotation.
+- Kiểm code AI: Đọc lại code, chạy pytest, chạy pipeline và đối chiếu kết quả với các file báo cáo.
+- Một lần AI sai: AI từng đề xuất phash_dist = 16, nhưng khi kiểm tra ảnh thực tế phát hiện hai cặp ảnh khác nội dung bị đánh dấu trùng. Tôi điều chỉnh xuống 14.
 *(Thưởng +2, tùy chọn)* CVAT: lọc `width < 20`, ảnh/số box khớp, đối chiếu `BOX_TINY` (xem docs/CVAT_FILTER.md), 1 câu về `can_review`.
